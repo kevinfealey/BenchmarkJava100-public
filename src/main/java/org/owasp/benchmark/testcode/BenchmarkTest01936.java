@@ -56,11 +56,9 @@ public class BenchmarkTest01936 extends HttpServlet {
             cmd = org.owasp.benchmark.helpers.Utils.getOSCommandString("echo");
         }
 
-        Runtime r = Runtime.getRuntime();
-
+        // Avoid command injection by implementing echo in Java instead of executing OS commands
         try {
-            Process p = r.exec(cmd + bar);
-            org.owasp.benchmark.helpers.Utils.printOSCommandResults(p, response);
+            response.getWriter().println(org.owasp.esapi.ESAPI.encoder().encodeForHTML(bar));
         } catch (IOException e) {
             System.out.println("Problem executing cmdi - TestCase");
             response.getWriter()
