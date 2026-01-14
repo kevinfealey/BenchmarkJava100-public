@@ -49,8 +49,20 @@ public class BenchmarkTest01584 extends HttpServlet {
 
         response.setHeader("X-XSS-Protection", "0");
         Object[] obj = {"a", "b"};
-        response.getWriter().format(java.util.Locale.US, bar, obj);
+        response.getWriter().format(java.util.Locale.US, escapeHtml(bar), obj);
     } // end doPost
+
+    private String escapeHtml(String input) {
+        if (input == null) {
+            return null;
+        }
+        return input.replace("&", "&amp;")
+                    .replace("<", "&lt;")
+                    .replace(">", "&gt;")
+                    .replace("\"", "&quot;")
+                    .replace("'", "&#x27;")
+                    .replace("/", "&#x2F;");
+    }
 
     private class Test {
 
