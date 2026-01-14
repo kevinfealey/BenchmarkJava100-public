@@ -55,11 +55,15 @@ public class BenchmarkTest02244 extends HttpServlet {
         if (osName.indexOf("Windows") != -1) {
             argList.add("cmd.exe");
             argList.add("/c");
+            argList.add("echo");
+            argList.add(bar);
         } else {
             argList.add("sh");
             argList.add("-c");
+            argList.add("echo \"$1\"");
+            argList.add("sh");
+            argList.add(bar);
         }
-        argList.add("echo " + bar);
 
         ProcessBuilder pb = new ProcessBuilder(argList);
 
