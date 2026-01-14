@@ -26,6 +26,6 @@ jobs:
           ref: main
           
       - name: AppSecAI
-        uses: AppSecureAI/submit-run-action@main
+        uses: ./.github/actions/submit-run-action
         with:
           file: vuln/output_sarif_100.sarif
