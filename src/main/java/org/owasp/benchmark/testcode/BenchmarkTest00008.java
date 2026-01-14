@@ -49,6 +49,15 @@ public class BenchmarkTest00008 extends HttpServlet {
         // URL Decode the header value since req.getHeader() doesn't. Unlike req.getParameter().
         param = java.net.URLDecoder.decode(param, "UTF-8");
 
+        // Validate that the procedure name is a valid SQL identifier to prevent SQL injection
+        // Only allow alphanumeric characters and underscores, must start with letter or underscore
+        if (!param.matches("^[a-zA-Z_][a-zA-Z0-9_]*$")) {
+            response.getWriter()
+                    .println(
+                            "Error: Invalid procedure name format. Procedure names must contain only letters, numbers, and underscores.");
+            return;
+        }
+
         String sql = "{call " + param + "}";
 
         try {
