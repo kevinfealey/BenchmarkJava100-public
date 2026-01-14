@@ -68,12 +68,15 @@ public class BenchmarkTest01829 extends HttpServlet {
             java.util.Properties benchmarkprops = new java.util.Properties();
             benchmarkprops.load(
                     this.getClass().getClassLoader().getResourceAsStream("benchmark.properties"));
-            String algorithm = benchmarkprops.getProperty("cryptoAlg1", "DESede/ECB/PKCS5Padding");
+            String algorithm = benchmarkprops.getProperty("cryptoAlg1", "AES/GCM/NoPadding");
             javax.crypto.Cipher c = javax.crypto.Cipher.getInstance(algorithm);
 
             // Prepare the cipher to encrypt
-            javax.crypto.SecretKey key = javax.crypto.KeyGenerator.getInstance("DES").generateKey();
+            javax.crypto.SecretKey key = javax.crypto.KeyGenerator.getInstance("AES").generateKey();
             c.init(javax.crypto.Cipher.ENCRYPT_MODE, key);
+
+            // Retrieve the IV generated during initialization
+            byte[] iv = c.getIV();
 
             // encrypt and store the results
             byte[] input = {(byte) '?'};
@@ -92,6 +95,11 @@ public class BenchmarkTest01829 extends HttpServlet {
             }
             byte[] result = c.doFinal(input);
 
+            // Prepend IV to the encrypted data for later decryption
+            byte[] combined = new byte[iv.length + result.length];
+            System.arraycopy(iv, 0, combined, 0, iv.length);
+            System.arraycopy(result, 0, combined, iv.length, result.length);
+
             java.io.File fileTarget =
                     new java.io.File(
                             new java.io.File(org.owasp.benchmark.helpers.Utils.TESTFILES_DIR),
@@ -100,7 +108,7 @@ public class BenchmarkTest01829 extends HttpServlet {
                     new java.io.FileWriter(fileTarget, true); // the true will append the new data
             fw.write(
                     "secret_value="
-                            + org.owasp.esapi.ESAPI.encoder().encodeForBase64(result, true)
+                            + org.owasp.esapi.ESAPI.encoder().encodeForBase64(combined, true)
                             + "\n");
             fw.close();
             response.getWriter()
