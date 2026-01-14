@@ -18,6 +18,8 @@
 package org.owasp.benchmark.testcode;
 
 import java.io.IOException;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -60,7 +62,13 @@ public class BenchmarkTest00537 extends HttpServlet {
         String bar = org.springframework.web.util.HtmlUtils.htmlEscape(param);
 
         try {
-            java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
+            String secretKey = System.getenv("HMAC_SECRET_KEY");
+            if (secretKey == null || secretKey.isEmpty()) {
+                throw new ServletException("HMAC_SECRET_KEY environment variable not configured");
+            }
+            SecretKeySpec secretKeySpec = new SecretKeySpec(secretKey.getBytes(), "HmacSHA256");
+            Mac mac = Mac.getInstance("HmacSHA256");
+            mac.init(secretKeySpec);
             byte[] input = {(byte) '?'};
             Object inputParam = bar;
             if (inputParam instanceof String) input = ((String) inputParam).getBytes();
@@ -75,9 +83,8 @@ public class BenchmarkTest00537 extends HttpServlet {
                 }
                 input = java.util.Arrays.copyOf(strInput, i);
             }
-            md.update(input);
 
-            byte[] result = md.digest();
+            byte[] result = mac.doFinal(input);
             java.io.File fileTarget =
                     new java.io.File(
                             new java.io.File(org.owasp.benchmark.helpers.Utils.TESTFILES_DIR),
@@ -99,13 +106,13 @@ public class BenchmarkTest00537 extends HttpServlet {
                                             .encodeForHTML(new String(input))
                                     + "' hashed and stored<br/>");
 
-        } catch (java.security.NoSuchAlgorithmException e) {
+        } catch (java.security.NoSuchAlgorithmException | java.security.InvalidKeyException e) {
             System.out.println("Problem executing hash - TestCase");
             throw new ServletException(e);
         }
 
         response.getWriter()
                 .println(
-                        "Hash Test java.security.MessageDigest.getInstance(java.lang.String) executed");
+                        "Hash Test javax.crypto.Mac.getInstance(java.lang.String) executed");
     }
 }
