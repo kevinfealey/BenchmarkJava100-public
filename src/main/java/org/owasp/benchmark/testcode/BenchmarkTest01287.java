@@ -45,6 +45,14 @@ public class BenchmarkTest01287 extends HttpServlet {
 
         String bar = new Test().doSomething(request, param);
 
+        // Validate and sanitize input to prevent command injection
+        // Only allow alphanumeric characters, underscores, hyphens, equals, and dots
+        if (bar != null && !bar.matches("^[a-zA-Z0-9_\\-=.]*$")) {
+            response.getWriter()
+                    .println("Invalid input: only alphanumeric characters, underscores, hyphens, equals, and dots are allowed");
+            return;
+        }
+
         String cmd =
                 org.owasp.benchmark.helpers.Utils.getInsecureOSCommandString(
                         this.getClass().getClassLoader());
