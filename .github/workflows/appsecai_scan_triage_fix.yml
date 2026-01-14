@@ -28,4 +28,4 @@ jobs:
       - name: AppSecAI
         uses: ./.github/actions/submit-run-action
         with:
-          file: vuln/output_sarif_100.sarif
+          file: vuln_file/output_sarif_100.sarif
